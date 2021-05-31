@@ -53,49 +53,46 @@ class VCTracker(object):
         # Fill here the function
         res = cv2.matchTemplate(image, self.template, cv2.TM_CCOEFF_NORMED)
         
-        img_downscaled = self.resize_img(image,factor=0.75)
+        '''img_downscaled = self.resize_img(image,factor=0.75)
         res_down = cv2.matchTemplate(img_downscaled, self.template, cv2.TM_CCORR_NORMED)
         
         img_upscaled = self.resize_img(image,factor=1.25)
-        res_up = cv2.matchTemplate(img_upscaled, self.template, cv2.TM_CCORR_NORMED)
+        res_up = cv2.matchTemplate(img_upscaled, self.template, cv2.TM_CCORR_NORMED)'''
 
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
         best_loc = max_loc
         best_val = max_val
+        
+        '''min_val_down, max_val_down, min_loc_down, max_loc_down = cv2.minMaxLoc(res_down)
+        if best_val < max_val_down:
+            best_loc = max_loc_down
+            best_val = max_val_down
+
+        min_val_up,max_val_up,min_loc_up,max_loc_up = cv2.minMaxLoc(res_up)
+        
+        if best_val < max_val_up:
+            best_loc = max_loc_up
+            best_val = max_val_up'''
 
         img_width = image.shape[0]
         img_height = image.shape[1]
 
         self.position = (best_loc[0] + self.size[0] / 2.0, best_loc[1] + self.size[1] / 2.0)
-        self.mask = self.create_circular_mask(img_height,img_width,center=self.position, radius=self.size[0] * 1.75)
-        self.masked_img = image.copy()
-        self.masked_img[~self.mask] = 0
 
         #Downscale image to look for bigger object
-        self.img_downscaled = self.resize_img(image,factor=0.75)
+        #img_downscaled = self.resize_img(image,factor=0.75)
 
         #Upscale image to look for smaller object
-        self.img_upscaled = self.resize_img(image, factor=1.25)
+        #img_upscaled = self.resize_img(image, factor=1.25)
 
         #return best_loc[0], best_loc[1], self.w, self.h
         left = best_loc[0]
         top = best_loc[1]
+        confidence = best_val
         return vot.Rectangle(left, top, self.size[0], self.size[1]), confidence
 
 
-    #Creates a circular mask centered and with a radius defined.
-    def create_circular_mask(self, h, w, center=None, radius=None):
-
-        if center is None:  # use the middle of the image
-            center = (int(w/2), int(h/2))
-        if radius is None:  # use the smallest distance between the center and image walls
-            radius = min(center[0], center[1], w-center[0], h-center[1])
-
-        Y, X = np.ogrid[:w, :h]
-        dist_from_center = np.sqrt((X - center[0])**2 + (Y-center[1])**2)
-
-        mask = dist_from_center <= radius
-        return mask
+    
     
     
     def resize_img(self,image, factor=0.75):
@@ -109,9 +106,6 @@ class VCTracker(object):
         img_width = image.shape[0]
         img_height = image.shape[1]
 
-        mask = self.create_circular_mask(img_height,img_width,center= np.array(self.position)*factor, radius=self.size[0] * 1.75)
-
-        image[~mask] = 0
         return image
 
         
