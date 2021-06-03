@@ -41,38 +41,34 @@ class VCTracker(object):
     # the width and the height of the bounding box
     # *******************************************************************
     def track(self, image):
+        # Fill here the function
+        # You have the information in self.template, self.position and self.size
+        # You can update them and add other variables
 
-	# Fill here the function
-	# You have the information in self.template, self.position and self.size
-	# You can update them and add other variables
-        
-            
         left = max(0, int(self.position[0] - self.size[0]))
         top = max(0, int(self.position[1] - self.size[1]))
         right = min(image.shape[1] - 1, int(self.position[0] + self.size[0]))
         bottom = min(image.shape[0] - 1, int(self.position[1] + self.size[1]))
-	
+
         smallerImage = image[int(top):int(bottom), int(left):int(right)]
         res = cv2.matchTemplate(smallerImage, self.template, cv2.TM_CCOEFF_NORMED)
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-        
+
         left = left + max_loc[0]
         top = top + max_loc[1]
         self.position = (left + float(self.size[0]) / 2, top + float(self.size[1]) / 2)
 
         confidence = max_val
-        
+
         nextLeft = max(left, 0)
         nextTop = max(top, 0)
         nextRight = min(left + self.size[0], image.shape[1] - 1)
         nextBottom = min(top + self.size[1], image.shape[0] - 1)
         self.template = image[int(nextTop):int(nextBottom), int(nextLeft):int(nextRight)]
-        
+
         return vot.Rectangle(left, top, self.size[0], self.size[1]), confidence
 
 
-        
-        
 # *****************************************
 # VOT: Create VOT handle at the beginning
 #      Then get the initializaton region
