@@ -8,6 +8,7 @@ import numpy
 import collections
 import numpy as np
 
+
 class VCTracker(object):
 
     def __init__(self, image, region):
@@ -19,20 +20,19 @@ class VCTracker(object):
         right = min(region.x + region.width, image.shape[1] - 1)
         bottom = min(region.y + region.height, image.shape[0] - 1)
 
-        #Initial template
+        # Initial template
         self.template = image[int(top):int(bottom), int(left):int(right)]
-        #Center position of the template (u,v)
+        # Center position of the template (u,v)
         self.position = (region.x + region.width / 2, region.y + region.height / 2)
-        #Size of the template (width, height)
+        # Size of the template (width, height)
         self.size = (region.width, region.height)
-        
-        #Use these lines for testing.
-        # Comment them when you evaluate with the vot toolkit
-        im = cv2.rectangle(image, (int(left), int(top)), (int(right), int(bottom)), (255,0,0), 2)
-        cv2.imshow('result',im)
-        cv2.imshow('template',self.template)
-        cv2.waitKey(1) #change 0 to 1 - remove waiting for key press
 
+        # Use these lines for testing.
+        # Comment them when you evaluate with the vot toolkit
+        im = cv2.rectangle(image, (int(left), int(top)), (int(right), int(bottom)), (255, 0, 0), 2)
+        cv2.imshow('result', im)
+        cv2.imshow('template', self.template)
+        cv2.waitKey(1)  # change 0 to 1 - remove waiting for key press
 
     # *******************************************************************
     # This is the function to fill. You can also modify the class and add additional
@@ -100,20 +100,20 @@ while True:
     if not imagefile:
         break
     image = cv2.imread(imagefile)
-    
+
     # Track the object in the image  
     region, confidence = tracker.track(image)
-    
-    #Use these lines for testing.
+
+    # Use these lines for testing.
     # Comment them when you evaluate with the vot toolkit
-    im = cv2.rectangle(image,(int(region.x),int(region.y)),(int(region.x+region.width),int(region.y+region.height)), (255,0,0), 2)
-    cv2.imshow('result',im)
+    im = cv2.rectangle(image, (int(region.x), int(region.y)),
+                       (int(region.x + region.width), int(region.y + region.height)), (255, 0, 0), 2)
+    cv2.imshow('result', im)
     if cv2.waitKey(1) & 0xFF == ord('q'):
-      break
-    
+        break
+
     # *****************************************
     # VOT: Report the position of the object
     #      every frame using report method.
     # *****************************************
     handle.report(region, confidence)
-
