@@ -45,68 +45,31 @@ class VCTracker(object):
 	# Fill here the function
 	# You have the information in self.template, self.position and self.size
 	# You can update them and add other variables
-        left = 0
-        top = 0
-        confidence = 0
+        
+            
+        left = max(0, int(self.position[0] - self.size[0]))
+        top = max(0, int(self.position[1] - self.size[1]))
+        right = min(image.shape[1] - 1, int(self.position[0] + self.size[0]))
+        bottom = min(image.shape[0] - 1, int(self.position[1] + self.size[1]))
 	
-        
-        # Fill here the function
-        res = cv2.matchTemplate(image, self.template, cv2.TM_CCOEFF_NORMED)
-        
-        '''img_downscaled = self.resize_img(image,factor=0.75)
-        res_down = cv2.matchTemplate(img_downscaled, self.template, cv2.TM_CCORR_NORMED)
-        
-        img_upscaled = self.resize_img(image,factor=1.25)
-        res_up = cv2.matchTemplate(img_upscaled, self.template, cv2.TM_CCORR_NORMED)'''
-
+        smallerImage = image[int(top):int(bottom), int(left):int(right)]
+        res = cv2.matchTemplate(smallerImage, self.template, cv2.TM_CCOEFF_NORMED)
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-        best_loc = max_loc
-        best_val = max_val
         
-        '''min_val_down, max_val_down, min_loc_down, max_loc_down = cv2.minMaxLoc(res_down)
-        if best_val < max_val_down:
-            best_loc = max_loc_down
-            best_val = max_val_down
+        left = left + max_loc[0]
+        top = top + max_loc[1]
+        self.position = (left + float(self.size[0]) / 2, top + float(self.size[1]) / 2)
 
-        min_val_up,max_val_up,min_loc_up,max_loc_up = cv2.minMaxLoc(res_up)
+        confidence = max_val
         
-        if best_val < max_val_up:
-            best_loc = max_loc_up
-            best_val = max_val_up'''
-
-        img_width = image.shape[0]
-        img_height = image.shape[1]
-
-        self.position = (best_loc[0] + self.size[0] / 2.0, best_loc[1] + self.size[1] / 2.0)
-
-        #Downscale image to look for bigger object
-        #img_downscaled = self.resize_img(image,factor=0.75)
-
-        #Upscale image to look for smaller object
-        #img_upscaled = self.resize_img(image, factor=1.25)
-
-        #return best_loc[0], best_loc[1], self.w, self.h
-        left = best_loc[0]
-        top = best_loc[1]
-        confidence = best_val
+        nextLeft = max(left, 0)
+        nextTop = max(top, 0)
+        nextRight = min(left + self.size[0], image.shape[1] - 1)
+        nextBottom = min(top + self.size[1], image.shape[0] - 1)
+        self.template = image[int(nextTop):int(nextBottom), int(nextLeft):int(nextRight)]
+        
         return vot.Rectangle(left, top, self.size[0], self.size[1]), confidence
 
-
-    
-    
-    
-    def resize_img(self,image, factor=0.75):
-        if factor > 1:
-            #Uses interpolation recommended to enlarge image
-            image = cv2.resize(image,(0,0),fx=factor,fy=factor,interpolation=cv2.INTER_CUBIC)
-        else:
-            #Uses interpolation recommended to reduce image
-            image  = cv2.resize(image,(0,0),fx=factor,fy=factor,interpolation=cv2.INTER_AREA)
-
-        img_width = image.shape[0]
-        img_height = image.shape[1]
-
-        return image
 
         
         
